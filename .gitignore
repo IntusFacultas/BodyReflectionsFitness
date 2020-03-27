@@ -1,0 +1,6 @@
+venv/*
+.env
+*.sqlite3
+**node_modules/**
+public/node_modules
+**/__pycache__/**
