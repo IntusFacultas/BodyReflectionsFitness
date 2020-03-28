@@ -144,6 +144,8 @@ export default Login;
 .login-signup-card {
   margin-top: 15%;
   width: 40%;
+  min-width: 400px;
+  margin-bottom: 100px;
 }
 .form-bottom-content {
   margin-top: 25px;

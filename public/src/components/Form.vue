@@ -1,18 +1,32 @@
 <template>
   <form>
-    <form-input
-      v-for="(field, index) in internalFields"
-      :key="`field${index}`"
-      :label="field.label"
-      :placeholder="field.placeholder"
-      :name="field.name"
-      :required="field.required"
-      v-model="field.value"
-      :errors="errors[field.name]"
-      :input-type="field.type"
-      @input="validateField(field)"
-    ></form-input>
-    <div class="form-bottom-content">
+    <div v-for="(field, index) in internalFields" :key="`field${index}`">
+      <form-input
+        v-if="field.type != 'select'"
+        :label="field.label"
+        :placeholder="field.placeholder"
+        :name="field.name"
+        :required="field.required"
+        v-model="field.value"
+        :errors="errors[field.name]"
+        :input-type="field.type"
+        @input="validateField(field)"
+      ></form-input>
+      <raw-form-input
+        :errors="errors[field.name]"
+        v-else-if="field.type == 'select'"
+      >
+        <n-label :for="field.name">{{ field.label }}</n-label>
+        <select-me
+          :name="field.name"
+          :can-be-empty="!field.required"
+          :options="field.options"
+          v-model="field.value"
+          @input="validateField(field)"
+        ></select-me>
+      </raw-form-input>
+    </div>
+    <div class="form-bottom-content" v-if="showBottom">
       <slot></slot>
       <div>
         <n-button
@@ -38,9 +52,12 @@
 </template>
 <script>
 import FormInput from "./FormInput";
+import RawFormInput from "./RawFormInput";
+import SelectMe from "@IntusFacultas/select-me";
 import { NButton } from "@IntusFacultas/button";
+import { NLabel } from "@IntusFacultas/typography";
 export const VueForm = {
-  components: { FormInput, NButton },
+  components: { FormInput, NButton, SelectMe, RawFormInput, NLabel },
   data() {
     return {
       internalFields: [],
@@ -48,6 +65,10 @@ export const VueForm = {
     };
   },
   props: {
+    showBottom: {
+      type: Boolean,
+      default: true
+    },
     submitting: Boolean,
     fields: {
       type: Array,
@@ -96,6 +117,7 @@ export const VueForm = {
       for (let field of this.internalFields) {
         field.value = "";
       }
+      this.$emit("clear");
       this.$emit("fields", this.internalFields.slice());
     },
     objectDeepEquals(ob1, ob2) {
@@ -146,7 +168,7 @@ export const VueForm = {
     },
     validateField(field) {
       if (typeof field.validation == "function") {
-        let value = field.validation(field.value);
+        let value = field.validation(field.value, this.internalFields);
         if (value) {
           this.internalErrors[field.name].push(value);
           return false;
