@@ -38,6 +38,9 @@ export const FormInput = {
       if (newVal != this.internalValue) {
         this.internalValue = newVal;
       }
+    },
+    errors(newVal) {
+      console.log(newVal);
     }
   },
   mounted() {

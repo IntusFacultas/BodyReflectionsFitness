@@ -8,12 +8,12 @@
         :name="field.name"
         :required="field.required"
         v-model="field.value"
-        :errors="errors[field.name]"
+        :errors="internalErrors[field.name]"
         :input-type="field.type"
         @input="validateField(field)"
       ></form-input>
       <raw-form-input
-        :errors="errors[field.name]"
+        :errors="internalErrors[field.name]"
         v-else-if="field.type == 'select'"
       >
         <n-label :for="field.name">{{ field.label }}</n-label>
@@ -86,7 +86,9 @@ export const VueForm = {
   watch: {
     errors: {
       handler(newVal) {
-        for (let field in Object.keys(newVal)) {
+        console.log("I fired");
+        console.log(newVal);
+        for (let field of Object.keys(newVal)) {
           if (!this.deepEquals(newVal[field], this.internalErrors[field])) {
             this.internalErrors[field] = newVal[field].slice();
           }
@@ -100,7 +102,10 @@ export const VueForm = {
       this.$watch(() => field, this.handleChange, { deep: true });
     });
     this.internalFields = this.fields.slice();
-    this.internalErrors = Object.assign({}, this.errors);
+    for (let field of Object.keys(this.errors)) {
+      this.internalErrors[field] = this.errors[field].slice();
+    }
+    // this.internalErrors = Object.assign({}, this.errors);
   },
   computed: {
     errorsExist() {
@@ -170,10 +175,12 @@ export const VueForm = {
       if (typeof field.validation == "function") {
         let value = field.validation(field.value, this.internalFields);
         if (value) {
-          this.internalErrors[field.name].push(value);
+          if (this.internalErrors[field.name].indexOf(value) == -1)
+            this.internalErrors[field.name].push(value);
           return false;
         }
       }
+      this.internalErrors[field.name] = [];
       this.$emit("fields", this.internalFields.slice());
       return true;
     },

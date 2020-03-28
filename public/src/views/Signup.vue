@@ -1,6 +1,6 @@
 <template>
   <div class="align-center">
-    <card :header="true" class="login-signup-card ">
+    <card :header="true" class="signup-card ">
       <template v-slot:header>
         <sub-section-title>Create an Account</sub-section-title>
       </template>
@@ -61,12 +61,12 @@ export const Signup = {
           name: "password",
           label: "Password",
           type: "text",
-          placeholder: "password",
+          placeholder: "Password",
           value: "",
           required: true
         },
         {
-          name: "passwordConfirm",
+          name: "confirmPassword",
           label: "Confirm Password",
           type: "text",
           placeholder: "Passwords must match",
@@ -171,3 +171,12 @@ export const Signup = {
 };
 export default Signup;
 </script>
+
+<style>
+.signup-card {
+  margin-top: 15px;
+  margin-bottom: 100px;
+  width: 40%;
+  min-width: 400px;
+}
+</style>

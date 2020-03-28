@@ -1,6 +1,6 @@
 <template>
   <div class="align-center">
-    <card :header="true" class="login-signup-card ">
+    <card :header="true" class="login-card ">
       <template v-slot:header>
         <sub-section-title>Login</sub-section-title>
       </template>
@@ -141,7 +141,7 @@ export default Login;
   align-items: center;
   align-content: center;
 }
-.login-signup-card {
+.login-card {
   margin-top: 15%;
   width: 40%;
   min-width: 400px;
