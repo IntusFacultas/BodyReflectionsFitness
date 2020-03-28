@@ -5,65 +5,20 @@
         <sub-section-title>Login</sub-section-title>
       </template>
       <template v-slot:body>
-        <form>
-          <vue-input
-            :flavor="computeFlavor('username')"
-            name="username"
-            input-type="text"
-            :required="true"
-            label="Username"
-            v-model="username"
-            placeholder="Username"
-          >
-          </vue-input>
-          <div class="form-error-message">
-            <n-small
-              :flavor="computeFlavor('usernameText')"
-              v-for="(error, index) in errors.username"
-              :key="`username-error-${index}`"
+        <vue-form
+          :fields="fields"
+          :errors="errors"
+          :submitting="submitting"
+          @fields="fields = $event"
+          @submit="submit"
+        >
+          <web-text>
+            Not a member?
+            <web-link :href="$router.resolve('register').route.path"
+              >Sign up!</web-link
             >
-              {{ error }}
-            </n-small>
-          </div>
-          <vue-input
-            :flavor="computeFlavor('password')"
-            name="password"
-            v-model="password"
-            input-type="password"
-            :required="true"
-            label="Password"
-            placeholder="Password"
-          >
-          </vue-input>
-          <div class="form-error-message">
-            <n-small
-              :flavor="computeFlavor('passwordText')"
-              v-for="(error, index) in errors.password"
-              :key="`password-error-${index}`"
-            >
-              {{ error }}
-            </n-small>
-          </div>
-          <div class="other-content">
-            <div>
-              <web-text>
-                Not a member?
-                <web-link :href="$router.resolve('register').route.path"
-                  >Sign up!</web-link
-                >
-              </web-text>
-            </div>
-            <n-button
-              role="button"
-              flavor="Primary"
-              @click="submit"
-              :disabled="submitting"
-            >
-              <span>Submit </span>
-              <i v-if="submitting" class="fa fa-spinner fa-pulse"></i>
-            </n-button>
-          </div>
-        </form>
+          </web-text>
+        </vue-form>
       </template>
     </card>
   </div>
@@ -71,28 +26,40 @@
 
 <script>
 import Card from "@IntusFacultas/card";
-import {
-  SubSectionTitle,
-  WebLink,
-  NSmall,
-  WebText
-} from "@IntusFacultas/typography";
-import { VueInput } from "@IntusFacultas/input";
+import VueForm from "../components/Form";
+import { SubSectionTitle, WebLink, WebText } from "@IntusFacultas/typography";
 import { NButton } from "@IntusFacultas/button";
+import SessionMixin from "../mixin";
 export const Login = {
+  mixins: [SessionMixin],
   components: {
     Card,
     SubSectionTitle,
-    VueInput,
+    VueForm,
     NButton,
     WebLink,
-    NSmall,
     WebText
   },
   data() {
     return {
-      username: "",
-      password: "",
+      fields: [
+        {
+          name: "username",
+          label: "Username",
+          type: "text",
+          placeholder: "Username",
+          value: "",
+          required: true
+        },
+        {
+          name: "password",
+          label: "Password",
+          type: "password",
+          placeholder: "Password",
+          value: "",
+          required: true
+        }
+      ],
       submitting: false,
       errors: {
         username: [],
@@ -100,22 +67,18 @@ export const Login = {
       }
     };
   },
-  mounted() {
-    if (this.$route.meta.requiresAuth) {
-      this.$store.dispatch("verifySession").then(this.validateSession);
-    }
-  },
   methods: {
-    submit($e) {
-      $e.preventDefault();
+    submit() {
       let self = this;
       this.submitting = true;
       this.$store
         .dispatch("login", {
-          username: this.username,
-          password: this.password
+          username: this.fields[0].value,
+          password: this.fields[1].value
         })
-        .then()
+        .then(() => {
+          this.$router.push({ name: "dashboard" });
+        })
         .catch(data => {
           if (data.response) {
             if (Array.isArray(data.response.data.username))
@@ -160,26 +123,6 @@ export const Login = {
         .then(() => {
           self.submitting = false;
         });
-    },
-    computeFlavor(el) {
-      if (el.indexOf("Text") != -1) {
-        return "Danger";
-      } else {
-        if (el.indexOf("username") != -1) {
-          if (this.errors.username.length > 0) {
-            return "Danger";
-          }
-          return "LightBlue";
-        } else {
-          if (this.errors.password.length > 0) {
-            return "Danger";
-          }
-          return "LightBlue";
-        }
-      }
-    },
-    validateSession() {
-      this.$router.push({ name: "dashboard" });
     }
   }
 };
@@ -202,7 +145,7 @@ export default Login;
   margin-top: 15%;
   width: 40%;
 }
-.other-content {
+.form-bottom-content {
   margin-top: 25px;
   display: flex;
   justify-content: space-between;

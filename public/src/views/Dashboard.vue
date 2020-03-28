@@ -5,17 +5,9 @@
 </template>
 
 <script>
+import SessionMixin from "../mixin";
 export const Dashboard = {
-  mounted() {
-    if (this.$route.meta.requiresAuth) {
-      this.$store.dispatch("verifySession").catch(this.validateSession);
-    }
-  },
-  methods: {
-    validateSession() {
-      this.$router.push({ name: "login" });
-    }
-  }
+  mixins: [SessionMixin]
 };
 export default Dashboard;
 </script>

@@ -1,0 +1,89 @@
+<template>
+  <div>
+    <vue-input
+      :flavor="computeFlavor('field')"
+      :name="name"
+      :input-type="inputType"
+      :required="required"
+      :label="label"
+      v-model="internalValue"
+      :placeholder="placeholder"
+      @change="onChange"
+      @input="onInput"
+    >
+    </vue-input>
+    <div class="form-error-message">
+      <n-small
+        :flavor="computeFlavor('fieldText')"
+        v-for="(error, index) in errors"
+        :key="`field-error-${index}`"
+      >
+        {{ error }}
+      </n-small>
+    </div>
+  </div>
+</template>
+<script>
+import { NSmall } from "@IntusFacultas/typography";
+import { VueInput } from "@IntusFacultas/input";
+export const FormInput = {
+  components: { NSmall, VueInput },
+  data() {
+    return {
+      internalValue: ""
+    };
+  },
+  watch: {
+    value(newVal) {
+      if (newVal != this.internalValue) {
+        this.internalValue = newVal;
+      }
+    }
+  },
+  mounted() {
+    this.internalValue = this.value;
+  },
+  props: {
+    name: String,
+    inputType: String,
+    label: String,
+    required: Boolean,
+    value: [String, Number],
+    placeholder: String,
+    errors: {
+      type: Array,
+      default() {
+        return [];
+      }
+    }
+  },
+  methods: {
+    computeFlavor(el) {
+      if (el.indexOf("Text") != -1) {
+        return "Danger";
+      } else {
+        if (this.errors.length > 0) {
+          return "Danger";
+        }
+        return "LightBlue";
+      }
+    },
+    onChange($e) {
+      this.internalValue = $e;
+      this.$emit("change", $e);
+    },
+    onInput($e) {
+      this.internalValue = $e;
+      this.$emit("input", $e);
+    }
+  }
+};
+export default FormInput;
+</script>
+
+<style>
+.form-error-message {
+  min-height: 17px;
+  min-width: 1px;
+}
+</style>
