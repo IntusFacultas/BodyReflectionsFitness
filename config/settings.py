@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -151,3 +152,9 @@ MEDIA_URL = '/media/'
 
 AUTH_HTTP_COOKIE = "body_reflections_fitness_auth_token"
 AUTH_HTTP_COOKIE_EXPIRY = datetime.timedelta(days=1)
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "https://bodyreflections.fitness"
+]

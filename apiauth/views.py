@@ -120,7 +120,7 @@ class CreateAccount(APIView):
 class TokenLogout(APIView):
     permission_classes = (IsTokenAuthenticated,)
 
-    def post(self, request):
+    def get(self, request):
         try:
             request.user.auth_token.delete()
             return Response(status=status.HTTP_200_OK)

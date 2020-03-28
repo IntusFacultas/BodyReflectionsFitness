@@ -5,51 +5,29 @@ let baseURL;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://localhost:8000";
 } else {
-  baseURL = "https://www.bodyreflectionsfitness.fitness/";
+  baseURL = "https://www.bodyreflections.fitness";
 }
-// axios.defaults.xsrfCookieName = "csrftoken";
-// axios.defaults.xsrfHeaderName = "X-CSRFToken";
 export const HTTP = axios.create({
   baseURL: baseURL
-  // xsrfCookieName: "csrftoken",
-  // xsrfHeaderName: "X-CSRFToken"
 });
-const DEVELOPMENT_SERVER_CONFIGURATION = {
+export const SERVER_CONFIGURATION = {
   endpoints: {
     exercises() {
-      return "http://localhost:8000/api/filters/";
+      return "/api/exercises/";
     },
-    items() {
-      return "http://localhost:8000/api/items/";
+    verifySession() {
+      return "/api/auth/verify-session/";
+    },
+    logout() {
+      return "/api/auth/logout/";
     },
     login() {
-      return "http://localhost:8000/api/";
+      return "/api/auth/login/";
+    },
+    signup() {
+      return "/api/auth/signup/";
     }
   }
 };
-
-const PRODUCTION_SERVER_CONFIGURATION = {
-  endpoints: {
-    exercises() {
-      return document.querySelector(
-        'input[name="server-settings-FILTERSENDPOINT"]'
-      ).value;
-    },
-    items() {
-      return document.querySelector(
-        'input[name="server-settings-ITEMSENDPOINT"]'
-      ).value;
-    },
-    item() {
-      return document.querySelector('input[name="server-settings-login"]')
-        .value;
-    }
-  }
-};
-
-export const SERVER_CONFIGURATION =
-  process.env.NODE_ENV === "production"
-    ? PRODUCTION_SERVER_CONFIGURATION
-    : DEVELOPMENT_SERVER_CONFIGURATION;
 
 export default SERVER_CONFIGURATION;
