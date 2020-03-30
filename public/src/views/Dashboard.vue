@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="stateVerified">
     DASHBOARD
   </div>
 </template>

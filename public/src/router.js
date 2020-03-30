@@ -2,6 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 import Dashboard from "./views/Dashboard.vue";
 import Login from "./views/Login";
+import Logout from "./views/Logout";
 import Signup from "./views/Signup";
 // import store from "./store";
 // import { HTTP, SERVER_CONFIGURATION } from "./configuration";
@@ -29,6 +30,14 @@ const routes = [
     component: Login,
     meta: {
       guest: true
+    }
+  },
+  {
+    path: "/logout",
+    name: "logout",
+    component: Logout,
+    meta: {
+      requiresAuth: true
     }
   },
   {

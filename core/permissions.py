@@ -12,13 +12,13 @@ class IsTokenAuthenticated(BasePermission):
 
     def test_token_validity(self, request):
         if settings.AUTH_HTTP_COOKIE in request.COOKIES:
-            user_token_exists = Token.objects.filter(
-                user=request.user).exists()
-            user_token_matches_request = request.COOKIES.get(
-                settings.AUTH_HTTP_COOKIE) == request.user.auth_token.key
-            token_not_expired = request.user.auth_token.created + \
-                settings.AUTH_HTTP_COOKIE_EXPIRY > timezone.now()
-            return user_token_exists and token_not_expired and user_token_matches_request
+            if Token.objects.filter(
+                    key=request.COOKIES[settings.AUTH_HTTP_COOKIE]).exists():
+                token = Token.objects.get(
+                    key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
+                token_not_expired = token.created + \
+                    settings.AUTH_HTTP_COOKIE_EXPIRY > timezone.now()
+                return token_not_expired  # and user_token_matches_request
         return False
 
     def has_permission(self, request, view):

@@ -11,6 +11,7 @@
         :errors="internalErrors[field.name]"
         :input-type="field.type"
         @input="validateField(field)"
+        @keyup.enter="submitForm(index)"
       ></form-input>
       <raw-form-input
         :errors="internalErrors[field.name]"
@@ -34,6 +35,7 @@
           flavor="Warning"
           @click="clearAll"
           :disabled="submitting"
+          v-if="!disableClearing"
           class="form-button-spacing"
           >Clear</n-button
         >
@@ -41,9 +43,9 @@
           type="button"
           flavor="Primary"
           @click="submit($event)"
-          :disabled="submitting || errorsExist"
+          :disabled="submitting || errorsExist || disableSubmission"
         >
-          <span>Submit </span>
+          <span>Submit&nbsp;</span>
           <i v-if="submitting" class="fa fa-spinner fa-pulse"></i>
         </n-button>
       </div>
@@ -70,6 +72,12 @@ export const VueForm = {
       default: true
     },
     submitting: Boolean,
+    disableSubmission: Boolean,
+    disableClearing: Boolean,
+    allowSubmissionOnEnter: {
+      type: Boolean,
+      default: true
+    },
     fields: {
       type: Array,
       default() {
@@ -86,13 +94,7 @@ export const VueForm = {
   watch: {
     errors: {
       handler(newVal) {
-        console.log("I fired");
-        console.log(newVal);
-        for (let field of Object.keys(newVal)) {
-          if (!this.deepEquals(newVal[field], this.internalErrors[field])) {
-            this.internalErrors[field] = newVal[field].slice();
-          }
-        }
+        this.internalErrors = Object.assign({}, newVal);
       },
       deep: true
     }
@@ -105,7 +107,6 @@ export const VueForm = {
     for (let field of Object.keys(this.errors)) {
       this.internalErrors[field] = this.errors[field].slice();
     }
-    // this.internalErrors = Object.assign({}, this.errors);
   },
   computed: {
     errorsExist() {
@@ -118,6 +119,14 @@ export const VueForm = {
     }
   },
   methods: {
+    submitForm(index) {
+      if (
+        index == this.internalFields.length - 1 &&
+        this.allowSubmissionOnEnter
+      ) {
+        this.$emit("submit");
+      }
+    },
     clearAll() {
       for (let field of this.internalFields) {
         field.value = "";
@@ -175,13 +184,16 @@ export const VueForm = {
       if (typeof field.validation == "function") {
         let value = field.validation(field.value, this.internalFields);
         if (value) {
-          if (this.internalErrors[field.name].indexOf(value) == -1)
+          if (this.internalErrors[field.name].indexOf(value) == -1) {
             this.internalErrors[field.name].push(value);
+          }
+          this.$emit("errors", this.internalErrors);
           return false;
         }
       }
       this.internalErrors[field.name] = [];
       this.$emit("fields", this.internalFields.slice());
+      this.$emit("errors", this.internalErrors);
       return true;
     },
     handleChange() {
@@ -189,7 +201,7 @@ export const VueForm = {
     },
     submit($e) {
       $e.preventDefault();
-      console.log($e);
+      document.activeElement.blur();
       this.$emit("submit");
     }
   }

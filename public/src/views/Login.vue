@@ -1,6 +1,6 @@
 <template>
-  <div class="align-center">
-    <card :header="true" class="login-card ">
+  <div class="align-center" v-if="stateVerified">
+    <card :header="true" class="login-card">
       <template v-slot:header>
         <sub-section-title>Login</sub-section-title>
       </template>
@@ -14,14 +14,13 @@
         >
           <web-text>
             Not a member?
-            <web-link :href="$router.resolve('register').route.path"
-              >Sign up!</web-link
-            >
+            <web-link :href="$router.resolve('register').route.path">Sign up!</web-link>
           </web-text>
         </vue-form>
       </template>
     </card>
   </div>
+  <div v-else>Loading</div>
 </template>
 
 <script>
@@ -81,21 +80,37 @@ export const Login = {
         })
         .catch(data => {
           if (data.response) {
-            if (Array.isArray(data.response.data.username))
-              self.errors.username = data.response.data.username;
-            else self.errors.username = [];
-            if (Array.isArray(data.response.data.password))
-              self.errors.password = data.response.data.password;
-            else self.errors.password = [];
-            if (data.response.data.non_field_errors) {
-              let content = "";
-              for (let error of data.response.data.non_field_errors) {
-                content += `<p class="alert-text">${error}</p>`;
+            if (data.response.status != 500) {
+              if (Array.isArray(data.response.data.username))
+                self.errors.username = data.response.data.username;
+              else self.errors.username = [];
+              if (Array.isArray(data.response.data.password))
+                self.errors.password = data.response.data.password;
+              else self.errors.password = [];
+              if (data.response.data.non_field_errors) {
+                let content = "";
+                for (let error of data.response.data.non_field_errors) {
+                  content += `<p class="alert-text">${error}</p>`;
+                }
+                self.$store.commit("alert", {
+                  flavor: "Danger",
+                  title: "Login failed.",
+                  content: content,
+                  buttons: [
+                    {
+                      text: "Ok",
+                      flavor: "Normal",
+                      action() {}
+                    }
+                  ]
+                });
               }
+            } else {
               self.$store.commit("alert", {
                 flavor: "Danger",
                 title: "Login failed.",
-                content: content,
+                content:
+                  "The server experienced an error. Please try again later.",
                 buttons: [
                   {
                     text: "Ok",

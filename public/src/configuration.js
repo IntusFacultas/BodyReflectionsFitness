@@ -8,7 +8,8 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "https://www.bodyreflections.fitness";
 }
 export const HTTP = axios.create({
-  baseURL: baseURL
+  baseURL: baseURL,
+  withCredentials: true
 });
 export const SERVER_CONFIGURATION = {
   endpoints: {

@@ -1,6 +1,6 @@
 <template>
-  <div class="align-center">
-    <card :header="true" class="signup-card ">
+  <div class="align-center" v-if="stateVerified">
+    <card :header="true" class="signup-card">
       <template v-slot:header>
         <sub-section-title>Create an Account</sub-section-title>
       </template>
@@ -10,15 +10,20 @@
           :fields="accountFields"
           :submitting="submitting"
           :errors="accountErrors"
+          :allow-submission-on-enter="false"
+          @fields="accountFields = $event"
+          @errors="checkAccountErrors($event)"
           :show-bottom="false"
-        >
-        </vue-form>
+        ></vue-form>
         <hr />
         <category-title>Profile Information</category-title>
         <vue-form
           :fields="profileFields"
           :submitting="submitting"
           :errors="profileErrors"
+          :disable-submission="accountInternalErrorsExist"
+          @fields="profileFields = $event"
+          @submit="submit"
         >
           <web-text>
             Already have an account?
@@ -58,22 +63,22 @@ export const Signup = {
           required: true
         },
         {
-          name: "password",
+          name: "password1",
           label: "Password",
-          type: "text",
+          type: "password",
           placeholder: "Password",
           value: "",
           required: true
         },
         {
-          name: "confirmPassword",
+          name: "password2",
           label: "Confirm Password",
-          type: "text",
+          type: "password",
           placeholder: "Passwords must match",
           value: "",
           validation(value, fields) {
             let passwordField = fields.filter(
-              field => field.name == "password"
+              field => field.name == "password1"
             )[0];
             if (value != passwordField.value) {
               return "Passwords must match";
@@ -82,9 +87,10 @@ export const Signup = {
           required: true
         }
       ],
+      accountInternalErrorsExist: false,
       profileFields: [
         {
-          name: "firstName",
+          name: "first_name",
           label: "First Name",
           type: "text",
           placeholder: "First name",
@@ -92,7 +98,7 @@ export const Signup = {
           required: true
         },
         {
-          name: "lastName",
+          name: "last_name",
           label: "Last Name",
           type: "text",
           placeholder: "Last Name",
@@ -145,13 +151,13 @@ export const Signup = {
         email: [],
         age: [],
         gender: [],
-        firstName: [],
-        lastName: []
+        first_name: [],
+        last_name: []
       },
       accountErrors: {
         username: [],
-        password: [],
-        confirmPassword: []
+        password1: [],
+        password2: []
       }
     };
   },
@@ -164,9 +170,127 @@ export const Signup = {
     WebText,
     NButton
   },
-  computed: {},
+  computed: {
+    formattedAccountFields() {
+      let obj = {};
+      for (let field of this.accountFields) {
+        obj[field.name] = field.value;
+      }
+      return obj;
+    },
+    formattedProfileFields() {
+      let obj = {};
+      for (let field of this.profileFields) {
+        obj[field.name] =
+          field.type == "select"
+            ? field.value.map(x => x.value)[0]
+            : field.value;
+      }
+      return obj;
+    }
+  },
   methods: {
-    submit() {}
+    checkAccountErrors(errors) {
+      this.accountInternalErrorsExist = false;
+      for (let field of Object.keys(errors)) {
+        if (errors[field].length > 0) {
+          this.accountInternalErrorsExist = true;
+          break;
+        }
+      }
+    },
+    formatErrors(errorObj) {
+      if (typeof errorObj == "string") errorObj = JSON.parse(errorObj);
+      let obj = {};
+      for (let field of Object.keys(errorObj)) {
+        obj[field] = errorObj[field].map(x =>
+          typeof x == "string" ? x : x.message
+        );
+      }
+      return obj;
+    },
+    submit() {
+      this.submitting = true;
+      let self = this;
+      this.$store
+        .dispatch("signup", {
+          accountInformation: this.formattedAccountFields,
+          profileInformation: this.formattedProfileFields
+        })
+        .then(() => {
+          self.$store.commit("alert", {
+            flavor: "Success",
+            title: "Account Created.",
+            content: "Please login with your new account.",
+            buttons: [
+              {
+                text: "Ok",
+                flavor: "Normal",
+                action() {
+                  self.$router.push({ name: "login" });
+                }
+              }
+            ]
+          });
+        })
+        .catch(data => {
+          if (data.response) {
+            self.accountErrors = self.formatErrors(
+              data.response.data.accountErrors
+            );
+            let nonFieldAccountErrors =
+              typeof self.accountErrors.non_field_errors != "undefined"
+                ? self.accountErrors.non_field_errors
+                : [];
+            self.profileErrors = self.formatErrors(
+              data.response.data.profileErrors
+            );
+            let nonProfileErrors =
+              typeof self.profileErrors.non_field_errors != "undefined"
+                ? self.profileErrors.non_field_errors
+                : [];
+            let nonFieldErrors = [
+              ...nonFieldAccountErrors,
+              ...nonProfileErrors
+            ];
+            self.$forceUpdate();
+            if (nonFieldErrors.length != 0) {
+              let content = "";
+              for (let error of nonFieldErrors) {
+                content += `<p class="alert-text">${error}</p>`;
+              }
+              self.$store.commit("alert", {
+                flavor: "Danger",
+                title: "Account creation failed.",
+                content: content,
+                buttons: [
+                  {
+                    text: "Ok",
+                    flavor: "Normal",
+                    action() {}
+                  }
+                ]
+              });
+            }
+          } else {
+            self.$store.commit("alert", {
+              flavor: "Danger",
+              title: "Account creation failed.",
+              content: "There was an issue contacting the server.",
+              buttons: [
+                {
+                  text: "Ok",
+                  flavor: "Normal",
+                  action() {}
+                }
+              ]
+            });
+          }
+        })
+        .then(function() {
+          self.submitting = false;
+        });
+    }
   }
 };
 export default Signup;

@@ -5,4 +5,4 @@ from apiauth.models import Profile
 class ProfileForm(ModelForm):
     class Meta:
         model = Profile
-        fields = "__all__"
+        exclude = ("date_joined", "user")

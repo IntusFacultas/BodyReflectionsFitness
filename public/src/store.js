@@ -11,8 +11,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    signup(state, data) {
+      return HTTP.post(SERVER_CONFIGURATION.endpoints.signup(), data);
+    },
     login(state, data) {
       return HTTP.post(SERVER_CONFIGURATION.endpoints.login(), data);
+    },
+    logout() {
+      return HTTP.get(SERVER_CONFIGURATION.endpoints.logout());
     },
     verifySession() {
       return HTTP.get(SERVER_CONFIGURATION.endpoints.verifySession());

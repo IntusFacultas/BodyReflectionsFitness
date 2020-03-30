@@ -150,7 +150,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "../uploads")
 
 MEDIA_URL = '/media/'
 
-AUTH_HTTP_COOKIE = "body_reflections_fitness_auth_token"
+AUTH_HTTP_COOKIE = "brf_authtoken"
 AUTH_HTTP_COOKIE_EXPIRY = datetime.timedelta(days=1)
 
 CORS_ORIGIN_WHITELIST = [
@@ -158,3 +158,6 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8080",
     "https://bodyreflections.fitness"
 ]
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_DOMAIN = env.str("SESSION_COOKIE_DOMAIN", default=".localhost.")
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)

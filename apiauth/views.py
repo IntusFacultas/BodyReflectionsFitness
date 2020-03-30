@@ -70,9 +70,13 @@ class TokenLogin(APIView):
             token.created = datetime.datetime.now()
         response = Response(status=status.HTTP_200_OK)
         response.set_cookie(
-            settings.AUTH_HTTP_TOKEN,
-            token.key, expires=timezone.now() + datetime.timedelta(days=1)
+            settings.AUTH_HTTP_COOKIE,
+            token.key, expires=timezone.now() + datetime.timedelta(days=1),
+            secure=settings.SESSION_COOKIE_SECURE,
+            httponly=True,
+            samesite=False
         )
+        # response.cookies[settings.AUTH_HTTP_COOKIE]['httponly'] = True
         return response
 
 
@@ -85,11 +89,14 @@ class VerifySession(APIView):
 
 class CreateAccount(APIView):
     def post(self, request):
-        account_form = UserCreationForm(request.POST.get("accountInformation"))
-        profile_form = ProfileForm(request.POST.get("profileInformation"))
+        account_form = UserCreationForm(
+            data=request.data.get("accountInformation"))
+        profile_form = ProfileForm(data=request.data.get("profileInformation"))
         if account_form.is_valid() and profile_form.is_valid():
-            account_form.save()
-            profile_form.save()
+            user = account_form.save()
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
             return Response(status=status.HTTP_200_OK)
         elif account_form.is_valid():
             return Response(
@@ -122,7 +129,9 @@ class TokenLogout(APIView):
 
     def get(self, request):
         try:
-            request.user.auth_token.delete()
+            token = Token.objects.get(
+                key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
+            token.delete()
             return Response(status=status.HTTP_200_OK)
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)

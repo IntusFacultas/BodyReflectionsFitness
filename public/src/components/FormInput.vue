@@ -10,16 +10,15 @@
       :placeholder="placeholder"
       @change="onChange"
       @input="onInput"
-    >
-    </vue-input>
+      @keyup="$emit('keyup', $event)"
+    ></vue-input>
     <div class="form-error-message">
       <n-small
         :flavor="computeFlavor('fieldText')"
-        v-for="(error, index) in errors"
-        :key="`field-error-${index}`"
+        v-for="error in errors"
+        :key="`field-error-${error}`"
+        >{{ error }}</n-small
       >
-        {{ error }}
-      </n-small>
     </div>
   </div>
 </template>
@@ -28,6 +27,7 @@ import { NSmall } from "@IntusFacultas/typography";
 import { VueInput } from "@IntusFacultas/input";
 export const FormInput = {
   components: { NSmall, VueInput },
+  tag: "what",
   data() {
     return {
       internalValue: ""
@@ -38,9 +38,6 @@ export const FormInput = {
       if (newVal != this.internalValue) {
         this.internalValue = newVal;
       }
-    },
-    errors(newVal) {
-      console.log(newVal);
     }
   },
   mounted() {
