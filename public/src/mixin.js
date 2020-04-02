@@ -1,3 +1,4 @@
+import { mapGetters } from "vuex";
 export const SessionMixin = {
   data() {
     return {
@@ -49,12 +50,28 @@ export const SessionMixin = {
             });
           }
         })
-        .then(this.verifyState);
+        .then(data => {
+          this.verifyState(data.response.data);
+        });
     }
   },
+  computed: {
+    ...mapGetters(["user"])
+  },
   methods: {
-    verifyState() {
+    formatErrors(errorObj) {
+      if (typeof errorObj == "string") errorObj = JSON.parse(errorObj);
+      let obj = {};
+      for (let field of Object.keys(errorObj)) {
+        obj[field] = errorObj[field].map(x =>
+          typeof x == "string" ? x : x.message
+        );
+      }
+      return obj;
+    },
+    verifyState(data) {
       this.stateVerified = true;
+      this.$store.commit("setUser", data.data);
     },
     invalidateSession() {
       this.$router.push({ name: "login" });

@@ -1,14 +1,12 @@
 <template>
-  <div>
+  <div class="relative-div">
     <slot></slot>
     <div class="form-error-message">
       <n-small
         :flavor="computeFlavor('fieldText')"
         v-for="(error, index) in errors"
         :key="`field-error-${index}`"
-      >
-        {{ error }}
-      </n-small>
+      >{{ error }}</n-small>
     </div>
   </div>
 </template>

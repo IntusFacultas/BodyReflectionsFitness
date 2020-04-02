@@ -4,13 +4,21 @@ import { SERVER_CONFIGURATION, HTTP } from "./configuration";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
+  state: {
+    user: {}
+  },
   mutations: {
     alert(state, data) {
       this.$alert(data);
+    },
+    setUser(state, user) {
+      Vue.set(state, "user", user);
     }
   },
   actions: {
+    changePassword(state, data) {
+      return HTTP.post(SERVER_CONFIGURATION.endpoints.changePassword(), data);
+    },
     signup(state, data) {
       return HTTP.post(SERVER_CONFIGURATION.endpoints.signup(), data);
     },
@@ -24,5 +32,9 @@ export default new Vuex.Store({
       return HTTP.get(SERVER_CONFIGURATION.endpoints.verifySession());
     }
   },
-  getters: {}
+  getters: {
+    user(state) {
+      return state.user;
+    }
+  }
 });

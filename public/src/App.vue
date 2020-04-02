@@ -1,9 +1,9 @@
 <template>
-  <div id="app" class="relative-div">
-    <navbar :title="title" :right-items="rightItems"></navbar>
-    <theme-provider class="relative-div">
+  <div id="app">
+    <navbar :title="title" :left-items="leftItems" :right-items="rightItems"></navbar>
+    <theme-provider :theme="CUSTOM_THEME">
       <vue-me :parent-instance="this.$store"></vue-me>
-      <router-view class="relative-div"></router-view>
+      <router-view></router-view>
     </theme-provider>
   </div>
 </template>
@@ -12,6 +12,7 @@
 import { ThemeProvider } from "vue-styled-components";
 import VueMe from "@IntusFacultas/vue-me";
 import { Navbar } from "@IntusFacultas/navbar";
+import { CUSTOM_THEME } from "./configuration";
 export default {
   name: "App",
   components: {
@@ -21,6 +22,7 @@ export default {
   },
   data() {
     return {
+      CUSTOM_THEME,
       title: {
         text: "Body Reflections",
         url: "/",
@@ -29,9 +31,29 @@ export default {
     };
   },
   computed: {
+    leftItems() {
+      if (this.$route.meta.requiresAuth) {
+        return [
+          {
+            type: "item",
+            html: "<i class='fa fa-home'  aria-hidden='true'></i>",
+            text: "Home",
+            url: this.$router.resolve("dashboard").route.path
+          }
+        ];
+      } else {
+        return [];
+      }
+    },
     rightItems() {
       if (this.$route.meta.requiresAuth) {
         return [
+          {
+            type: "item",
+            html: `<i class="fa fa-user" aria-hidden="true"></i>`, // rendered as HTML
+            text: "Profile",
+            url: this.$router.resolve("profile").route.path
+          },
           {
             type: "item",
             html: `<i class="fa fa-sign-out" aria-hidden="true"></i>`, // rendered as HTML
@@ -60,5 +82,8 @@ export default {
 }
 body {
   margin: 0;
+}
+[v-cloak] {
+  display: none;
 }
 </style>

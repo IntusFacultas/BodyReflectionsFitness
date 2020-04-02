@@ -4,6 +4,8 @@ import Dashboard from "./views/Dashboard.vue";
 import Login from "./views/Login";
 import Logout from "./views/Logout";
 import Signup from "./views/Signup";
+import Profile from "./views/Profile";
+import ProfileInformation from "./views/ProfileInformation";
 // import store from "./store";
 // import { HTTP, SERVER_CONFIGURATION } from "./configuration";
 Vue.use(Router);
@@ -39,6 +41,25 @@ const routes = [
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    redirect: "/profile/information",
+    component: Profile,
+    meta: {
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "information",
+        name: "profile-information",
+        component: ProfileInformation,
+        meta: {
+          requiresAuth: true
+        }
+      }
+    ]
   },
   {
     path: "/register",

@@ -2,6 +2,27 @@ import axios from "axios";
 
 let baseURL;
 
+export const CUSTOM_THEME = {
+  BRF: {
+    color: {
+      color: "#222"
+    },
+    background: {
+      color: "#fcfcfc",
+      hover: "#f2f2f2",
+      focus: "#f2f2f2"
+    },
+    border: {
+      color: "#fcfcfc"
+    }
+  }
+};
+export const GENDER_VALUE_TO_TEXT_LOOKUP = {
+  1: "Male",
+  2: "Female",
+  3: "Prefer not to state",
+  4: "Non-binary/Other"
+};
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://localhost:8000";
 } else {
@@ -15,6 +36,9 @@ export const SERVER_CONFIGURATION = {
   endpoints: {
     exercises() {
       return "/api/exercises/";
+    },
+    changePassword() {
+      return "/api/auth/change-password/";
     },
     verifySession() {
       return "/api/auth/verify-session/";

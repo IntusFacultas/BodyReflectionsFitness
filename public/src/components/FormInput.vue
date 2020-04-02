@@ -6,6 +6,7 @@
       :input-type="inputType"
       :required="required"
       :label="label"
+      :disabled="disabled"
       v-model="internalValue"
       :placeholder="placeholder"
       @change="onChange"
@@ -17,8 +18,7 @@
         :flavor="computeFlavor('fieldText')"
         v-for="error in errors"
         :key="`field-error-${error}`"
-        >{{ error }}</n-small
-      >
+      >{{ error }}</n-small>
     </div>
   </div>
 </template>
@@ -50,6 +50,10 @@ export const FormInput = {
     required: Boolean,
     value: [String, Number],
     placeholder: String,
+    disabled: {
+      type: Boolean,
+      default: false
+    },
     errors: {
       type: Array,
       default() {

@@ -7,24 +7,24 @@
         :placeholder="field.placeholder"
         :name="field.name"
         :required="field.required"
+        :disabled="field.disabled"
         v-model="field.value"
         :errors="internalErrors[field.name]"
         :input-type="field.type"
         @input="validateField(field)"
         @keyup.enter="submitForm(index)"
       ></form-input>
-      <raw-form-input
-        :errors="internalErrors[field.name]"
-        v-else-if="field.type == 'select'"
-      >
+      <raw-form-input :errors="internalErrors[field.name]" v-else-if="field.type == 'select'">
         <n-label :for="field.name">{{ field.label }}</n-label>
         <select-me
           :name="field.name"
           :can-be-empty="!field.required"
           :options="field.options"
           v-model="field.value"
+          :class="{'opacity-transparent': !load}"
           @input="validateField(field)"
         ></select-me>
+        <placeholder class="field-placeholder" height="35px" v-if="!load"></placeholder>
       </raw-form-input>
     </div>
     <div class="form-bottom-content" v-if="showBottom">
@@ -37,8 +37,7 @@
           :disabled="submitting"
           v-if="!disableClearing"
           class="form-button-spacing"
-          >Clear</n-button
-        >
+        >Clear</n-button>
         <n-button
           type="button"
           flavor="Primary"
@@ -58,12 +57,21 @@ import RawFormInput from "./RawFormInput";
 import SelectMe from "@IntusFacultas/select-me";
 import { NButton } from "@IntusFacultas/button";
 import { NLabel } from "@IntusFacultas/typography";
+import { Placeholder } from "@IntusFacultas/placeholder";
 export const VueForm = {
-  components: { FormInput, NButton, SelectMe, RawFormInput, NLabel },
+  components: {
+    FormInput,
+    NButton,
+    SelectMe,
+    RawFormInput,
+    NLabel,
+    Placeholder
+  },
   data() {
     return {
       internalFields: [],
-      internalErrors: {}
+      internalErrors: {},
+      load: false
     };
   },
   props: {
@@ -92,6 +100,9 @@ export const VueForm = {
     }
   },
   watch: {
+    fields() {
+      this.internalFields = this.fields.slice();
+    },
     errors: {
       handler(newVal) {
         this.internalErrors = Object.assign({}, newVal);
@@ -100,6 +111,10 @@ export const VueForm = {
     }
   },
   mounted() {
+    let self = this;
+    setTimeout(() => {
+      self.load = true;
+    }, 500);
     this.fields.forEach(field => {
       this.$watch(() => field, this.handleChange, { deep: true });
     });
@@ -210,6 +225,15 @@ export default VueForm;
 </script>
 
 <style>
+.field-placeholder {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 20px;
+}
+.opacity-transparent {
+  opacity: 0;
+}
 .form-button-spacing {
   margin-right: 5px;
 }

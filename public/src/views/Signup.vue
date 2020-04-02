@@ -27,9 +27,7 @@
         >
           <web-text>
             Already have an account?
-            <web-link :href="$router.resolve('login').route.path"
-              >Log in.</web-link
-            >
+            <web-link :href="$router.resolve('login').route.path">Log in.</web-link>
           </web-text>
         </vue-form>
       </template>
@@ -198,16 +196,6 @@ export const Signup = {
           break;
         }
       }
-    },
-    formatErrors(errorObj) {
-      if (typeof errorObj == "string") errorObj = JSON.parse(errorObj);
-      let obj = {};
-      for (let field of Object.keys(errorObj)) {
-        obj[field] = errorObj[field].map(x =>
-          typeof x == "string" ? x : x.message
-        );
-      }
-      return obj;
     },
     submit() {
       this.submitting = true;

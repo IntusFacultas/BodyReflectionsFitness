@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views import View
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from rest_framework import parsers, renderers, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.schemas import coreapi as coreapi_schema, ManualSchema
@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from core.permissions import IsTokenAuthenticated
 from django.conf import settings
 from apiauth.forms import ProfileForm
+from .serializers import AccountSerializer
 import datetime
 
 
@@ -65,16 +66,17 @@ class TokenLogin(APIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        user.last_login = timezone.now()
+        Token.objects.get(user=user).delete()
+        token = Token.objects.create(user=user)
         token, created = Token.objects.get_or_create(user=user)
-        if not created:
-            token.created = datetime.datetime.now()
         response = Response(status=status.HTTP_200_OK)
         response.set_cookie(
             settings.AUTH_HTTP_COOKIE,
             token.key, expires=timezone.now() + datetime.timedelta(days=1),
             secure=settings.SESSION_COOKIE_SECURE,
             httponly=True,
-            samesite=False
+            samesite=True
         )
         # response.cookies[settings.AUTH_HTTP_COOKIE]['httponly'] = True
         return response
@@ -84,7 +86,28 @@ class VerifySession(APIView):
     permission_classes = (IsTokenAuthenticated,)
 
     def get(self, request):
-        return Response(status=status.HTTP_200_OK)
+        token = Token.objects.get(
+            key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
+        profile = token.user.profile
+        account_data = AccountSerializer(instance=profile).data
+        return Response(data=account_data, status=status.HTTP_200_OK)
+
+
+class ChangePassword(APIView):
+    permission_classes = (IsTokenAuthenticated,)
+
+    def post(self, request):
+        token = Token.objects.get(
+            key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
+        user = token.user
+        form = PasswordChangeForm(user, request.data)
+        if form.is_valid():
+            form.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(
+            data={"errors": form.errors.as_json()},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class CreateAccount(APIView):
