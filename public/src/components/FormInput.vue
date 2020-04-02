@@ -18,7 +18,8 @@
         :flavor="computeFlavor('fieldText')"
         v-for="error in errors"
         :key="`field-error-${error}`"
-      >{{ error }}</n-small>
+        >{{ error }}</n-small
+      >
     </div>
   </div>
 </template>
@@ -89,5 +90,7 @@ export default FormInput;
 .form-error-message {
   min-height: 17px;
   min-width: 1px;
+  display: flex;
+  flex-direction: column;
 }
 </style>

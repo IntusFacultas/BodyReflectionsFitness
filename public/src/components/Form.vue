@@ -14,17 +14,24 @@
         @input="validateField(field)"
         @keyup.enter="submitForm(index)"
       ></form-input>
-      <raw-form-input :errors="internalErrors[field.name]" v-else-if="field.type == 'select'">
+      <raw-form-input
+        :errors="internalErrors[field.name]"
+        v-else-if="field.type == 'select'"
+      >
         <n-label :for="field.name">{{ field.label }}</n-label>
         <select-me
           :name="field.name"
           :can-be-empty="!field.required"
           :options="field.options"
           v-model="field.value"
-          :class="{'opacity-transparent': !load}"
+          :class="{ 'opacity-transparent': !load }"
           @input="validateField(field)"
         ></select-me>
-        <placeholder class="field-placeholder" height="35px" v-if="!load"></placeholder>
+        <placeholder
+          class="field-placeholder"
+          height="35px"
+          v-if="!load"
+        ></placeholder>
       </raw-form-input>
     </div>
     <div class="form-bottom-content" v-if="showBottom">
@@ -37,7 +44,8 @@
           :disabled="submitting"
           v-if="!disableClearing"
           class="form-button-spacing"
-        >Clear</n-button>
+          >Clear</n-button
+        >
         <n-button
           type="button"
           flavor="Primary"
@@ -71,7 +79,9 @@ export const VueForm = {
     return {
       internalFields: [],
       internalErrors: {},
-      load: false
+      load: false,
+      errorsExist: false,
+      overridenFieldErrors: []
     };
   },
   props: {
@@ -104,8 +114,15 @@ export const VueForm = {
       this.internalFields = this.fields.slice();
     },
     errors: {
-      handler(newVal) {
-        this.internalErrors = Object.assign({}, newVal);
+      handler() {
+        // this.internalErrors = Object.assign({}, newVal);
+        for (let field of Object.keys(this.errors)) {
+          if (this.overridenFieldErrors.indexOf(field) == -1) {
+            this.$set(this.internalErrors, field, this.errors[field].slice());
+          }
+        }
+        this.checkErrors();
+        this.$forceUpdate();
       },
       deep: true
     }
@@ -123,17 +140,17 @@ export const VueForm = {
       this.internalErrors[field] = this.errors[field].slice();
     }
   },
-  computed: {
-    errorsExist() {
+  methods: {
+    checkErrors() {
       for (let field of Object.keys(this.internalErrors)) {
         if (this.internalErrors[field].length != 0) {
+          this.errorsExist = true;
           return true;
         }
       }
+      this.errorsExist = false;
       return false;
-    }
-  },
-  methods: {
+    },
     submitForm(index) {
       if (
         index == this.internalFields.length - 1 &&
@@ -199,16 +216,25 @@ export const VueForm = {
       if (typeof field.validation == "function") {
         let value = field.validation(field.value, this.internalFields);
         if (value) {
+          if (!Array.isArray(this.internalErrors[field.name])) {
+            this.$set(this.internalErrors, field.name, [value]);
+          }
           if (this.internalErrors[field.name].indexOf(value) == -1) {
             this.internalErrors[field.name].push(value);
           }
+          this.$forceUpdate();
           this.$emit("errors", this.internalErrors);
+          this.checkErrors();
           return false;
         }
       }
       this.internalErrors[field.name] = [];
+      if (this.overridenFieldErrors.indexOf(field.name) == -1) {
+        this.overridenFieldErrors.push(field.name);
+      }
       this.$emit("fields", this.internalFields.slice());
       this.$emit("errors", this.internalErrors);
+      this.checkErrors();
       return true;
     },
     handleChange() {
@@ -216,6 +242,7 @@ export const VueForm = {
     },
     submit($e) {
       $e.preventDefault();
+      this.overridenFieldErrors = [];
       document.activeElement.blur();
       this.$emit("submit");
     }

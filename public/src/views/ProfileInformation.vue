@@ -25,6 +25,7 @@
           :errors="changePasswordFormErrors"
           @fields="changePasswordFormFields = $event"
           :submitting="submittingPassword"
+          @submit="submitChangePassword"
         >
           <span>&nbsp;</span>
         </vue-form>
@@ -148,12 +149,25 @@ export const Profile = {
         });
       }
     },
+    formatFields(fields) {
+      let formattedFields = {};
+      for (let field of fields) {
+        formattedFields[field.name] = field.value;
+      }
+      return formattedFields;
+    },
     submitChangePassword() {
       this.submittingPassword = true;
       let self = this;
       this.$store
-        .dispatch("changePassword", this.changePasswordFormFields)
+        .dispatch(
+          "changePassword",
+          this.formatFields(this.changePasswordFormFields)
+        )
         .then(() => {
+          for (let field of self.changePasswordFormFields) {
+            field.value = "";
+          }
           self.$store.commit("alert", {
             flavor: "Success",
             title: "Password changed.",
@@ -168,7 +182,7 @@ export const Profile = {
           });
         })
         .catch(data => {
-          if (data.response) {
+          if (data.response && data.response.status != 500) {
             self.changePasswordFormErrors = self.formatErrors(
               data.response.data.errors
             );

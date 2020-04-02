@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from rest_framework import parsers, renderers, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -16,6 +18,7 @@ from .serializers import AccountSerializer
 import datetime
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class TokenLogin(APIView):
     throttle_classes = ()
     permission_classes = ()
@@ -93,6 +96,7 @@ class VerifySession(APIView):
         return Response(data=account_data, status=status.HTTP_200_OK)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ChangePassword(APIView):
     permission_classes = (IsTokenAuthenticated,)
 
@@ -110,6 +114,7 @@ class ChangePassword(APIView):
         )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateAccount(APIView):
     def post(self, request):
         account_form = UserCreationForm(

@@ -27,7 +27,7 @@ export const Profile = {
           type: "item",
           text: "Account Information & Security",
           icon: "",
-          url: this.$router.resolve("profile-information").route.path,
+          url: this.$router.resolve("information").route.path,
           disabled: false,
           active: this.$route.path == "/profile/information"
         }
