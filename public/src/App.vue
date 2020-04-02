@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <navbar :title="title" :left-items="leftItems" :right-items="rightItems"></navbar>
+    <navbar
+      :title="title"
+      :left-items="leftItems"
+      :right-items="rightItems"
+    ></navbar>
     <theme-provider :theme="CUSTOM_THEME">
       <vue-me :parent-instance="this.$store"></vue-me>
       <router-view></router-view>
@@ -38,7 +42,7 @@ export default {
             type: "item",
             html: "<i class='fa fa-home'  aria-hidden='true'></i>",
             text: "Home",
-            url: this.$router.resolve("dashboard").route.path
+            url: this.$router.resolve({ name: "dashboard" }).route.path
           }
         ];
       } else {
@@ -52,13 +56,13 @@ export default {
             type: "item",
             html: `<i class="fa fa-user" aria-hidden="true"></i>`, // rendered as HTML
             text: "Profile",
-            url: this.$router.resolve("profile").route.path
+            url: this.$router.resolve({ name: "profile" }).route.path
           },
           {
             type: "item",
             html: `<i class="fa fa-sign-out" aria-hidden="true"></i>`, // rendered as HTML
             text: "Sign Out",
-            url: this.$router.resolve("logout").route.path
+            url: this.$router.resolve({ name: "logout" }).route.path
           }
         ];
       } else {
@@ -67,7 +71,7 @@ export default {
             type: "item",
             html: `<i class="fa fa-sign-in" aria-hidden="true"></i>`, // rendered as HTML
             text: "Sign In",
-            url: this.$router.resolve("login").route.path
+            url: this.$router.resolve({ name: "login" }).route.path
           }
         ];
       }
