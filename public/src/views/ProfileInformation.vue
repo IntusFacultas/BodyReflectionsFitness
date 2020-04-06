@@ -5,13 +5,26 @@
         <sub-section-title>Account Information</sub-section-title>
       </template>
       <template v-slot:body>
+        <vue-input
+          input-type="text"
+          :readonly="true"
+          name="username"
+          class="profile-information-custom-field"
+          v-model="user.username"
+          label="Username"
+        ></vue-input>
         <vue-form
           :disable-clearing="true"
           :fields="userFields"
           :errors="userErrors"
           @fields="userFields = $event"
+          :submitting="submittingProfile"
+          @submit="submitProfileUpdate"
         >
-          <span>&nbsp;</span>
+          <span>
+            <web-text :bold="true">Date Joined:&nbsp;</web-text>
+            <web-text>{{ user.date_joined }}</web-text>
+          </span>
         </vue-form>
       </template>
     </card>
@@ -37,11 +50,13 @@
 <script>
 import Card from "@IntusFacultas/card";
 import VueForm from "../components/Form";
+import { VueInput } from "@IntusFacultas/input";
+import { WebText } from "@IntusFacultas/typography";
 import { SubSectionTitle } from "@IntusFacultas/typography";
 import SessionMixin from "../mixin";
 import { GENDER_VALUE_TO_TEXT_LOOKUP } from "../configuration";
 export const Profile = {
-  components: { Card, VueForm, SubSectionTitle },
+  components: { Card, VueForm, SubSectionTitle, VueInput, WebText },
   data() {
     return {
       changePasswordFormFields: [
@@ -79,6 +94,7 @@ export const Profile = {
         }
       ],
       submittingPassword: false,
+      submittingProfile: false,
       changePasswordFormErrors: {},
       userFields: [],
       userErrors: {}
@@ -152,9 +168,68 @@ export const Profile = {
     formatFields(fields) {
       let formattedFields = {};
       for (let field of fields) {
-        formattedFields[field.name] = field.value;
+        formattedFields[field.name] =
+          field.type == "select"
+            ? field.value.map(x => x.value)[0]
+            : field.value;
       }
       return formattedFields;
+    },
+    submitProfileUpdate() {
+      this.submittingProfile = true;
+      let self = this;
+      this.$store
+        .dispatch("updateProfile", this.formatFields(this.userFields))
+        .then(() => {
+          self.$store.commit("toast", {
+            type: "success",
+            text: "Profile updated."
+          });
+        })
+        .catch(data => {
+          if (data.response && data.response.status != 500) {
+            self.userErrors = self.formatErrors(data.response.data.errors);
+            let nonFieldErrors =
+              typeof self.userErrors.non_field_errors != "undefined"
+                ? self.userErrors.non_field_errors
+                : [];
+            self.$forceUpdate();
+            if (nonFieldErrors.length != 0) {
+              let content = "";
+              for (let error of nonFieldErrors) {
+                content += `<p class="alert-text">${error}</p>`;
+              }
+              self.$store.commit("alert", {
+                flavor: "Danger",
+                title: "Profile update failed.",
+                content: content,
+                buttons: [
+                  {
+                    text: "Ok",
+                    flavor: "Normal",
+                    action() {}
+                  }
+                ]
+              });
+            }
+          } else {
+            self.$store.commit("alert", {
+              flavor: "Danger",
+              title: "Profile update failed.",
+              content: "There was an issue contacting the server.",
+              buttons: [
+                {
+                  text: "Ok",
+                  flavor: "Normal",
+                  action() {}
+                }
+              ]
+            });
+          }
+        })
+        .then(() => {
+          self.submittingProfile = false;
+        });
     },
     submitChangePassword() {
       this.submittingPassword = true;
@@ -248,6 +323,9 @@ export default Profile;
 </script>
 
 <style>
+.profile-information-custom-field {
+  margin-bottom: 12px;
+}
 .profile-view-container {
   padding: 15px 0px;
   margin-right: 15px;

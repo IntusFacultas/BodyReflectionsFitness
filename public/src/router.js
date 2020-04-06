@@ -6,6 +6,8 @@ import Logout from "./views/Logout";
 import Signup from "./views/Signup";
 import Profile from "./views/Profile";
 import ProfileInformation from "./views/ProfileInformation";
+import Exercises from "./views/Exercises";
+import Overview from "./views/Overview";
 // import store from "./store";
 // import { HTTP, SERVER_CONFIGURATION } from "./configuration";
 Vue.use(Router);
@@ -21,10 +23,29 @@ const routes = [
   {
     path: "/dashboard",
     name: "dashboard",
+    redirect: "/dashboard/overview",
     component: Dashboard,
     meta: {
       requiresAuth: true
-    }
+    },
+    children: [
+      {
+        path: "overview",
+        name: "dashboard-overview",
+        component: Overview,
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: "exercises",
+        name: "dashboard-exercises",
+        component: Exercises,
+        meta: {
+          requiresAuth: true
+        }
+      }
+    ]
   },
   {
     path: "/login",

@@ -1,5 +1,5 @@
 <template>
-  <div class="align-center" v-if="stateVerified">
+  <div class="align-center">
     <card :header="true" class="login-card">
       <template v-slot:header>
         <sub-section-title>Login</sub-section-title>
@@ -20,7 +20,6 @@
       </template>
     </card>
   </div>
-  <div v-else>Loading</div>
 </template>
 
 <script>

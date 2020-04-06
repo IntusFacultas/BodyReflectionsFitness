@@ -70,7 +70,8 @@ class TokenLogin(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         user.last_login = timezone.now()
-        Token.objects.get(user=user).delete()
+        if Token.objects.filter(user=user).exists():
+            Token.objects.get(user=user).delete()
         token = Token.objects.create(user=user)
         token, created = Token.objects.get_or_create(user=user)
         response = Response(status=status.HTTP_200_OK)
@@ -79,7 +80,7 @@ class TokenLogin(APIView):
             token.key, expires=timezone.now() + datetime.timedelta(days=1),
             secure=settings.SESSION_COOKIE_SECURE,
             httponly=True,
-            samesite=True
+            samesite="Strict"
         )
         # response.cookies[settings.AUTH_HTTP_COOKIE]['httponly'] = True
         return response
@@ -105,6 +106,22 @@ class ChangePassword(APIView):
             key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
         user = token.user
         form = PasswordChangeForm(user, request.data)
+        if form.is_valid():
+            form.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(
+            data={"errors": form.errors.as_json()},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class UpdateProfile(APIView):
+    def post(self, request):
+        token = Token.objects.get(
+            key=request.COOKIES[settings.AUTH_HTTP_COOKIE])
+        user = token.user
+        form = ProfileForm(instance=user.profile, data=request.data)
         if form.is_valid():
             form.save()
             return Response(status=status.HTTP_200_OK)

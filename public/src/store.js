@@ -11,11 +11,17 @@ export default new Vuex.Store({
     alert(state, data) {
       this.$alert(data);
     },
+    toast(state, data) {
+      this.$toast(data);
+    },
     setUser(state, user) {
       Vue.set(state, "user", user);
     }
   },
   actions: {
+    updateProfile(state, data) {
+      return HTTP.post(SERVER_CONFIGURATION.endpoints.updateProfile(), data);
+    },
     changePassword(state, data) {
       return HTTP.post(SERVER_CONFIGURATION.endpoints.changePassword(), data);
     },

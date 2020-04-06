@@ -42,6 +42,9 @@ export default Profile;
 .profile-view-container {
   padding: 15px 25px;
 }
+.custom-sidebar {
+  box-shadow: -3px 7px 14px #a2a2a2;
+}
 .custom-sidebar > div > span {
   padding-left: 7px;
 }

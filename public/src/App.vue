@@ -4,8 +4,13 @@
       :title="title"
       :left-items="leftItems"
       :right-items="rightItems"
+      flavor="Primary"
     ></navbar>
     <theme-provider :theme="CUSTOM_THEME">
+      <vue-toast
+        class="toast-container"
+        :parent-instance="this.$store"
+      ></vue-toast>
       <vue-me :parent-instance="this.$store"></vue-me>
       <router-view></router-view>
     </theme-provider>
@@ -15,6 +20,7 @@
 <script>
 import { ThemeProvider } from "vue-styled-components";
 import VueMe from "@IntusFacultas/vue-me";
+import VueToast from "@IntusFacultas/vue-toast";
 import { Navbar } from "@IntusFacultas/navbar";
 import { CUSTOM_THEME } from "./configuration";
 export default {
@@ -22,7 +28,8 @@ export default {
   components: {
     VueMe,
     ThemeProvider,
-    Navbar
+    Navbar,
+    VueToast
   },
   data() {
     return {
@@ -81,6 +88,10 @@ export default {
 </script>
 
 <style>
+.toast-container {
+  z-index: 2000;
+  margin-top: 20px;
+}
 .relative-div {
   position: relative;
 }

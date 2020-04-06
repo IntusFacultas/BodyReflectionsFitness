@@ -37,6 +37,9 @@ export const SERVER_CONFIGURATION = {
     exercises() {
       return "/api/exercises/";
     },
+    updateProfile() {
+      return "/api/auth/update-profile/";
+    },
     changePassword() {
       return "/api/auth/change-password/";
     },
